@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#4b55c4">
+  <title>Reporte de incidentes | ALEXIS PLATAFORMA</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🛡</span>
+      <span><strong>ALEXIS PLATAFORMA</strong><small>Centro de operaciones de seguridad</small></span>
+    </div>
+    <span class="topbar-label">Gestión de incidentes</span>
+  </header>
+
+  <main class="container">
+    <section class="report-card" aria-labelledby="form-title">
+      <form id="form-incidente">
+        <div class="report-heading">
+          <h1 id="form-title">Reporte de <strong>Incidente</strong></h1>
+          <div class="incident-meta">
+            <div class="form-group">
+              <label for="fecha">Fecha del incidente</label>
+              <input type="date" id="fecha" name="fecha" required>
+            </div>
+            <div class="form-group">
+              <label for="hora">Hora del incidente</label>
+              <input type="time" id="hora" name="hora" required>
+            </div>
+            <div class="form-group">
+              <label for="ubicacion">Ubicación del incidente</label>
+              <input type="text" id="ubicacion" name="ubicacion" maxlength="120" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="report-fields">
+          <div class="incident-summary">
+            <div class="form-group">
+              <label for="titulo">Título del incidente</label>
+              <input type="text" id="titulo" maxlength="120" required placeholder="Ej.: Acceso no autorizado">
+            </div>
+            <div class="form-group">
+              <label for="severidad">Severidad</label>
+              <select id="severidad">
+                <option value="Baja">Baja</option>
+                <option value="Media" selected>Media</option>
+                <option value="Alta">Alta</option>
+                <option value="Crítica">Crítica</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="form-group">
+              <label for="descripcion">Detalles del incidente</label>
+              <textarea id="descripcion" name="descripcion" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="danos">Daños o impacto</label>
+              <textarea id="danos" name="danos" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="acciones">Acciones realizadas</label>
+              <textarea id="acciones" name="acciones" rows="5"></textarea>
+            </div>
+            <fieldset class="witness-group">
+              <legend>¿Hubo testigos?</legend>
+              <div class="radio-options">
+                <label><input type="radio" name="testigos" value="Sí"> Sí</label>
+                <label><input type="radio" name="testigos" value="No" checked> No</label>
+              </div>
+              <div class="form-group">
+                <label for="datos-testigos">Nombres y datos de contacto</label>
+                <textarea id="datos-testigos" name="datos-testigos" rows="3"></textarea>
+              </div>
+            </fieldset>
+
+            <section class="reporter-panel" aria-labelledby="reporter-title">
+              <h2 id="reporter-title">Información de quien reporta</h2>
+              <div class="form-group">
+                <label for="reportero">Nombre</label>
+                <input type="text" id="reportero" name="reportero" maxlength="100" required>
+              </div>
+              <div class="form-group">
+                <label for="contacto">Teléfono o contacto</label>
+                <input type="text" id="contacto" name="contacto" maxlength="120" required>
+              </div>
+            </section>
+            <div class="form-group signature-group">
+              <label for="firma">Firma de quien reporta</label>
+              <textarea id="firma" name="firma" rows="4" placeholder="Escribe tu nombre como firma"></textarea>
+              <span class="signature-caption">Firma</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Guardar incidente</button>
+          <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="card incidents-card" aria-labelledby="incidents-title">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Registro</span>
+          <h2 id="incidents-title">Incidentes registrados</h2>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Título / detalle</th>
+              <th scope="col">Severidad</th>
+              <th scope="col">Estado</th>
+              <th scope="col">Acción</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
