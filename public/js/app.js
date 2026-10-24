@@ -9,6 +9,19 @@ function mostrarMensaje(mensaje, esError = false) {
   formMessage.classList.toggle('error', esError);
 }
 
+async function leerRespuestaJson(respuesta) {
+  const contenido = await respuesta.text();
+  if (!contenido.trim()) return null;
+
+  try {
+    return JSON.parse(contenido);
+  } catch {
+    throw new Error(
+      `El servidor devolvió una respuesta no válida (HTTP ${respuesta.status}). Verifica que la aplicación y la API estén ejecutándose.`
+    );
+  }
+}
+
 function establecerFechaYHoraActual() {
   const ahora = new Date();
   const fecha = new Date(ahora.getTime() - ahora.getTimezoneOffset() * 60000)
@@ -66,9 +79,14 @@ function renderizarIncidentes(incidentes) {
 async function cargarIncidentes() {
   try {
     const respuesta = await fetch(API_URL);
-    if (!respuesta.ok) throw new Error('No se pudieron cargar los incidentes.');
+    if (!respuesta.ok) {
+      throw new Error(`No se pudieron cargar los incidentes (HTTP ${respuesta.status}).`);
+    }
 
-    const incidentes = await respuesta.json();
+    const incidentes = await leerRespuestaJson(respuesta);
+    if (!Array.isArray(incidentes)) {
+      throw new Error('La API no devolvió una lista válida de incidentes.');
+    }
     renderizarIncidentes(incidentes);
   } catch (error) {
     console.error('Error al cargar incidentes:', error);
@@ -118,8 +136,10 @@ formIncidente.addEventListener('submit', async (evento) => {
     });
 
     if (!respuesta.ok) {
-      const errorData = await respuesta.json();
-      throw new Error(errorData.error || 'No se pudo registrar el incidente.');
+      const errorData = await leerRespuestaJson(respuesta);
+      throw new Error(
+        errorData?.error || `No se pudo registrar el incidente (HTTP ${respuesta.status}).`
+      );
     }
 
     formIncidente.reset();
@@ -145,7 +165,7 @@ async function eliminarIncidente(id) {
     mostrarMensaje('Incidente eliminado correctamente.');
   } catch (error) {
     console.error('Error al eliminar el incidente:', error);
-    mostrarMensaje(error.message, true);
+    mostrarMensaje(error.message || 'No se pudo eliminar el incidente.', true);
   }
 }
 
