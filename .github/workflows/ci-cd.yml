@@ -1,46 +1,44 @@
-name: CI/CD Pipeline SOC Platform
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
-  pruebas:
-    name: Ejecutar Pruebas Automatizadas
+  test:
     runs-on: ubuntu-latest
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:15-alpine
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: incidentes_test_db
+          POSTGRES_DB: incidentes_db
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U postgres -d incidentes_db"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
-    env:
-      NODE_ENV: test
-      PORT: 3000
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/incidentes_test_db
-
     steps:
-      - name: Descargar Código
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
+          cache: npm
+          cache-dependency-path: package-lock.json
 
-      - name: Instalar Dependencias
+      - name: Install dependencies
         run: npm ci
 
-      - name: Ejecutar Tests
+      - name: Run tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/incidentes_db
+          NODE_ENV: test
         run: npm test
