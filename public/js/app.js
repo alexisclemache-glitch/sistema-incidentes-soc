@@ -1,4 +1,8 @@
-const API_URL = '/api/incidentes';
+const esServidorLocalEstatico = ['localhost', '127.0.0.1'].includes(window.location.hostname)
+  && window.location.port !== '3000';
+const API_URL = esServidorLocalEstatico
+  ? 'http://localhost:3000/api/incidentes'
+  : '/api/incidentes';
 const tablaBody = document.getElementById('tabla-body');
 const formIncidente = document.getElementById('form-incidente');
 const formMessage = document.getElementById('form-message');
