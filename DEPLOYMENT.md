@@ -1,43 +1,80 @@
-# Despliegue en Render
+# Configuración y despliegue
+
+## Funcionalidad
+
+- Los incidentes se almacenan en PostgreSQL y disponen de listar, crear,
+  actualizar y eliminar.
+- El registro público crea cuentas `ANALISTA`; cada analista solo puede consultar
+  y modificar sus propios incidentes. Las cuentas `ADMIN` pueden gestionar
+  todos los incidentes.
+- El administrador inicial se aprovisiona con `ADMIN_EMAIL` y `ADMIN_PASSWORD`.
+  No hay credenciales de administrador predeterminadas; al iniciar, también se
+  deshabilita la antigua cuenta conocida `admin@soc.com` si conserva la
+  contraseña predeterminada.
+- La API requiere tokens Bearer JWT con una vigencia de ocho horas. La interfaz
+  conserva el token solo durante la sesión actual del navegador.
+- Los errores de validación se devuelven como HTTP 400. `/salud` comprueba la
+  conexión a PostgreSQL y devuelve HTTP 503 cuando la base de datos no está
+  disponible.
 
 ## Ejecución local
 
-La aplicación requiere una instancia PostgreSQL activa también cuando se ejecuta
-en local. Crea una base de datos llamada `incidentes_db`, copia `.env.example`
-a `.env`, reemplaza `YOUR_PASSWORD` por la contraseña de tu usuario PostgreSQL
-y ejecuta `npm start`. El servidor crea las tablas necesarias al iniciar.
+1. Crea una base PostgreSQL llamada `incidentes_db`.
+2. Copia `.env.example` a `.env` y configura `DATABASE_URL`, un `JWT_SECRET`
+   aleatorio de al menos 32 bytes, `ADMIN_EMAIL` y `ADMIN_PASSWORD`. La
+   contraseña administrativa debe tener entre 12 y 72 bytes.
+3. Instala las dependencias con `npm ci` y ejecuta `npm start`.
 
-No subas el archivo `.env` ni compartas sus credenciales.
+Puedes generar un secreto con
+`node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`.
+Configura `CORS_ORIGINS` con los orígenes exactos que sirven la interfaz,
+separados por comas y sin rutas. Por ejemplo:
+`http://localhost:5500,https://mi-interfaz.vercel.app`.
 
-## Render
+`DB_SSL` activa TLS para la conexión PostgreSQL. Mantén la verificación del
+certificado activa; `DB_SSL_REJECT_UNAUTHORIZED=false` solo debe usarse cuando
+un proveedor requiera explícitamente omitirla.
 
-La aplicación Express sirve tanto la API como la interfaz web. Para evitar el
-HTTP 405 de GitHub Pages, despliega el servicio web y PostgreSQL juntos en
-Render.
+No subas `.env` ni compartas sus credenciales.
 
-1. Sube este repositorio a GitHub.
-2. En Render, crea un **Blueprint** y selecciona el repositorio. Render leerá
-   `render.yaml` para crear el servicio Node.js y la base PostgreSQL.
-3. Espera a que el despliegue termine y abre la URL `onrender.com` del servicio.
-   La ruta `/salud` debe responder con el estado `UP`.
+## Despliegue en Render
 
-Render configura `DATABASE_URL` entre los servicios. No publiques esa URL ni
-la agregues al código fuente.
+1. Crea un Blueprint en Render para este repositorio. `render.yaml` crea el
+   servicio Node.js y la base PostgreSQL.
+2. Configura los secretos `JWT_SECRET`, `ADMIN_EMAIL` y `ADMIN_PASSWORD` en el
+   servicio. Render solicita los valores marcados como `sync: false`.
+3. Si la interfaz está alojada en otro dominio, configura `CORS_ORIGINS` con el
+   origen completo de esa interfaz, por ejemplo `https://mi-interfaz.vercel.app`.
+4. Espera a que el despliegue termine y comprueba
+   `https://<servicio>.onrender.com/salud`. Debe responder con `"estado":"UP"`.
 
-## Interfaz en Vercel y API en Render
+Render termina TLS HTTPS en su proxy. La aplicación confía en ese proxy, aplica
+HSTS en producción y redirige a HTTPS cuando detecta tráfico HTTP. `DATABASE_URL`
+se conecta por TLS en Render. No publiques esa URL ni la agregues al frontend.
 
-También puedes alojar solo la interfaz estática en Vercel y dejar Express y
-PostgreSQL en Render:
+## Frontend estático en Vercel y API en Render
 
-1. Despliega primero el Blueprint de Render y confirma que `https://<servicio>.onrender.com/salud`
-   responda con el estado `UP`.
-2. En Vercel, importa este repositorio como proyecto estático. Usa el directorio
-   `public` como directorio de salida y no configures un comando de compilación.
-3. En `public/js/config.js`, configura `window.SOC_API_BASE_URL` con la URL base
-   pública de Render, por ejemplo `https://<servicio>.onrender.com` (sin `/api`).
-   Guarda y vuelve a desplegar el proyecto de Vercel.
+1. Despliega primero el servicio y la base de Render y comprueba la ruta
+   `/salud`.
+2. En Vercel, despliega el directorio `public` como sitio estático, sin comando
+   de compilación.
+3. En `public/js/config.js`, define
+   `window.SOC_API_BASE_URL = 'https://<servicio>.onrender.com';` (sin `/api`).
+   La URL es pública y no debe contener secretos. Vuelve a desplegar Vercel.
+4. Configura el entorno `CORS_ORIGINS` del servicio Render con el origen
+   exacto del dominio Vercel y vuelve a desplegar la API.
 
-El frontend usa esa URL para listar, registrar y eliminar incidentes. Si se abre
-desde Render, usa automáticamente el mismo origen; desde Live Server, usa la API
-local en `http://localhost:3000`. No pongas la URL de la base de datos ni otras
-credenciales en `config.js`.
+La URL de API se configura explícitamente porque Vercel sirve estos archivos
+como estáticos y no sustituye automáticamente variables de entorno del servidor
+dentro del JavaScript del navegador. Si se abre el sitio desde el propio
+servicio Render, se utiliza el mismo origen; desde Live Server se intenta
+`http://localhost:3000`.
+
+## Rutas principales
+
+- `POST /api/auth/registro` — crea una cuenta de analista.
+- `POST /api/auth/sesion` — inicia sesión y devuelve un token JWT.
+- `GET /api/auth/sesion` — valida el token y devuelve la cuenta actual.
+- `GET /api/incidentes`, `POST /api/incidentes`,
+  `PUT /api/incidentes/:id`, `DELETE /api/incidentes/:id` — CRUD autenticado.
+- `GET /salud` — estado del servicio y la base de datos.

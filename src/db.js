@@ -1,19 +1,20 @@
 require("dotenv").config();
 const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
+const { randomBytes } = require("crypto");
 
 const cadenaConexion = process.env.DATABASE_URL;
 
 if (!cadenaConexion) {
-  console.error("❌ Falta la variable DATABASE_URL en el archivo .env");
+  console.error("Falta la variable DATABASE_URL.");
   process.exit(1);
 }
 
-const usarSSL = cadenaConexion.includes(".render.com") || process.env.DB_SSL === "true";
+const usarSSL = process.env.DB_SSL === "true";
 
 const pool = new Pool({
   connectionString: cadenaConexion,
-  ssl: usarSSL ? { rejectUnauthorized: false } : false
+  ssl: usarSSL ? { rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED !== "false" } : false
 });
 
 async function inicializarBaseDeDatos() {
@@ -47,15 +48,38 @@ async function inicializarBaseDeDatos() {
       );
     `);
 
-    // Crear un usuario administrador por defecto si no existe
-    const { rows } = await client.query("SELECT COUNT(*)::int AS total FROM usuarios");
-    if (rows[0].total === 0) {
-      const passHash = await bcrypt.hash("Admin123!", 10);
+    const { rows: cuentasLegacy } = await client.query(
+      "SELECT id, password FROM usuarios WHERE email = $1",
+      ["admin@soc.com"]
+    );
+    if (cuentasLegacy[0] && await bcrypt.compare("Admin123!", cuentasLegacy[0].password)) {
+      const passwordInaccesible = await bcrypt.hash(randomBytes(32).toString("hex"), 12);
       await client.query(
-        `INSERT INTO usuarios (email, password, nombre, rol) VALUES ($1, $2, $3, $4)`,
-        ["admin@soc.com", passHash, "Administrador SOC", "ADMIN"]
+        "UPDATE usuarios SET password = $1, rol = 'ANALISTA' WHERE id = $2",
+        [passwordInaccesible, cuentasLegacy[0].id]
       );
-      console.log("✅ Usuario administrador creado por defecto: admin@soc.com / Admin123!");
+      console.warn("Se deshabilitó la cuenta administrativa con credenciales predeterminadas.");
+    }
+
+    const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminName = process.env.ADMIN_NAME?.trim() || "Administrador SOC";
+    if (Boolean(adminEmail) !== Boolean(adminPassword)) {
+      throw new Error("ADMIN_EMAIL y ADMIN_PASSWORD deben configurarse juntos.");
+    }
+    if (adminEmail && adminPassword) {
+      if (Buffer.byteLength(adminPassword, "utf8") < 12 || Buffer.byteLength(adminPassword, "utf8") > 72) {
+        throw new Error("ADMIN_PASSWORD debe tener entre 12 y 72 bytes.");
+      }
+      const passHash = await bcrypt.hash(adminPassword, 12);
+      await client.query(
+        `INSERT INTO usuarios (email, password, nombre, rol)
+         VALUES ($1, $2, $3, 'ADMIN')
+         ON CONFLICT (email) DO UPDATE
+         SET password = EXCLUDED.password, nombre = EXCLUDED.nombre, rol = 'ADMIN'`,
+        [adminEmail, passHash, adminName]
+      );
+      console.log(`Cuenta administrativa configurada: ${adminEmail}`);
     }
 
     await client.query("COMMIT");

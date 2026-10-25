@@ -14,9 +14,37 @@
       <span><strong>ALEXIS PLATAFORMA</strong><small>Centro de operaciones de seguridad</small></span>
     </div>
     <span class="topbar-label">Gestión de incidentes</span>
+    <div class="session-controls" hidden>
+      <span id="session-user"></span>
+      <button id="logout-button" class="btn btn-logout" type="button">Cerrar sesión</button>
+    </div>
   </header>
 
   <main class="container">
+    <section id="auth-panel" class="card auth-card" aria-labelledby="auth-title">
+      <h1 id="auth-title">Iniciar sesión</h1>
+      <p>Accede con tu cuenta para gestionar incidentes.</p>
+      <form id="auth-form">
+        <div id="auth-name-group" class="form-group" hidden>
+          <label for="auth-name">Nombre</label>
+          <input id="auth-name" name="nombre" type="text" maxlength="100" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="auth-email">Correo electrónico</label>
+          <input id="auth-email" name="email" type="email" maxlength="120" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="auth-password">Contraseña</label>
+          <input id="auth-password" name="password" type="password" minlength="12" maxlength="72" required autocomplete="current-password">
+          <small>Las contraseñas deben tener al menos 12 caracteres.</small>
+        </div>
+        <button id="auth-submit" class="btn btn-primary" type="submit">Iniciar sesión</button>
+      </form>
+      <button id="auth-mode-button" class="auth-mode-button" type="button">Crear una cuenta de analista</button>
+      <p id="auth-message" class="form-message" role="status" aria-live="polite"></p>
+    </section>
+
+    <div id="app-panel" hidden>
     <section class="report-card" aria-labelledby="form-title">
       <form id="form-incidente">
         <div class="report-heading">
@@ -118,13 +146,14 @@
               <th scope="col">Título / detalle</th>
               <th scope="col">Severidad</th>
               <th scope="col">Estado</th>
-              <th scope="col">Acción</th>
+              <th scope="col">Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-body"></tbody>
         </table>
       </div>
     </section>
+    </div>
   </main>
 
   <script src="js/config.js"></script>

@@ -17,6 +17,10 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   min-width: 320px;
   min-height: 100vh;
@@ -74,6 +78,55 @@ body {
   color: var(--blue-dark);
   font-size: 0.92rem;
   font-weight: 700;
+}
+
+.session-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--blue-dark);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.auth-card {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.auth-card h1 {
+  margin-bottom: 8px;
+  color: var(--blue-dark);
+}
+
+.auth-card > p:not(.form-message) {
+  margin-bottom: 22px;
+  color: var(--muted);
+}
+
+.auth-card .form-group + .form-group {
+  margin-top: 17px;
+}
+
+.auth-card .form-group small {
+  color: var(--muted);
+}
+
+.auth-mode-button {
+  display: block;
+  margin: 18px auto 0;
+  padding: 8px;
+  border: 0;
+  background: transparent;
+  color: var(--blue-dark);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.auth-mode-button:hover {
+  text-decoration: underline;
 }
 
 .container {
@@ -283,6 +336,22 @@ textarea:focus {
   background: #ffe0e3;
 }
 
+.btn-edit,
+.btn-logout {
+  padding: 7px 10px;
+  background: var(--lavender);
+  color: var(--blue-dark);
+}
+
+.btn-edit:hover,
+.btn-logout:hover {
+  background: #dcdbff;
+}
+
+td .btn + .btn {
+  margin-left: 6px;
+}
+
 .form-message {
   min-height: 1.4em;
   margin-top: 10px;
@@ -371,6 +440,17 @@ td small {
 
   .topbar-label {
     display: none;
+  }
+
+  .session-controls {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    font-size: 0.78rem;
+  }
+
+  .auth-card {
+    padding: 22px 18px;
   }
 
   .report-heading,
