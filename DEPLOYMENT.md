@@ -1,5 +1,9 @@
 # Configuración y despliegue
 
+Documentación para la entrega académica: [documentación técnica](./docs/DOCUMENTACION_TECNICA.md),
+[manual de usuario](./docs/MANUAL_USUARIO.md), [presentación](./docs/PRESENTACION.html)
+y [guion de defensa](./docs/DEFENSA.md).
+
 ## Funcionalidad
 
 - Los incidentes se almacenan en PostgreSQL y disponen de listar, crear,

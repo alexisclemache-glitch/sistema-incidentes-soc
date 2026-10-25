@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10162b">
+  <title>Defensa | Sistema de incidentes SOC</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10162b;
+      --panel: #18213c;
+      --text: #f3f5ff;
+      --muted: #b8c2df;
+      --accent: #9da9ff;
+      --line: #39476d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 82% 10%, #27366b 0, transparent 38%), var(--bg);
+      color: var(--text);
+      font: 20px/1.55 "Segoe UI", Arial, sans-serif;
+    }
+    main { min-height: calc(100vh - 88px); display: grid; place-items: center; padding: 40px 7vw; }
+    .slide { display: none; width: min(1100px, 100%); min-height: 65vh; align-content: center; }
+    .slide.active { display: grid; }
+    .eyebrow { color: var(--accent); font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { max-width: 950px; margin: 14px 0 22px; font-size: clamp(2.8rem, 7vw, 5.8rem); line-height: 1.02; letter-spacing: -.045em; }
+    h2 { margin: 10px 0 20px; font-size: clamp(2.1rem, 5vw, 3.6rem); line-height: 1.1; }
+    p, li { color: var(--muted); }
+    strong { color: var(--text); }
+    ul { display: grid; gap: 13px; padding-left: 1.2em; }
+    code { color: #d3d8ff; background: #10172b; padding: .12em .38em; border-radius: 5px; font-size: .86em; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+    .card { padding: 20px; border: 1px solid var(--line); border-radius: 14px; background: rgb(24 33 60 / 88%); }
+    .card h3 { margin: 0 0 8px; color: var(--accent); font-size: 1.05rem; }
+    .card p { margin: 0; font-size: .9rem; }
+    .flow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; }
+    .flow span { padding: 10px 15px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .flow b { color: var(--accent); }
+    .pending { display: inline-block; padding: 8px 12px; border: 1px solid #e8be69; border-radius: 8px; color: #ffe1a0; }
+    footer { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 5vw; border-top: 1px solid var(--line); background: rgb(16 22 43 / 94%); }
+    .controls { display: flex; align-items: center; gap: 10px; }
+    button { min-width: 100px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--text); font: inherit; cursor: pointer; }
+    button:hover { border-color: var(--accent); }
+    button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+    #counter { min-width: 70px; color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+    details { margin-top: 26px; color: var(--muted); font-size: .82rem; }
+    details summary { color: var(--accent); cursor: pointer; }
+    @media (max-width: 700px) {
+      body { font-size: 17px; }
+      main { min-height: calc(100vh - 80px); padding: 28px 7vw; }
+      .grid { grid-template-columns: 1fr; }
+      footer { padding: 12px 4vw; }
+      button { min-width: 74px; padding: 8px; font-size: .85rem; }
+    }
+    @media print {
+      body { background: white; color: #111; }
+      main { display: block; padding: 0; }
+      .slide, .slide.active { display: grid; min-height: 92vh; page-break-after: always; }
+      .card, .flow span { background: white; }
+      p, li, details { color: #333; }
+      footer, details { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main aria-live="polite">
+    <section class="slide active">
+      <span class="eyebrow">Defensa del proyecto</span>
+      <h1>Sistema de gestión de incidentes SOC/CSIRT</h1>
+      <p>Aplicación web con persistencia PostgreSQL, API REST y control de acceso por roles.</p>
+      <p><strong>Repositorio:</strong> alexisclemache-glitch/sistema-incidentes-soc</p>
+      <p class="pending">URL pública: completar después de verificar el despliegue de Render.</p>
+      <details><summary>Notas del presentador</summary><p>Indicar que la URL solo se entrega como operativa después de validar /salud en el Web Service de Render.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">01 · Objetivo</span>
+      <h2>Registrar y dar seguimiento a incidentes</h2>
+      <ul>
+        <li>Centralizar el registro en una base relacional persistente.</li>
+        <li>Proporcionar operaciones de crear, consultar, actualizar y eliminar.</li>
+        <li>Separar los registros por usuario y permitir supervisión administrativa.</li>
+      </ul>
+      <details><summary>Notas del presentador</summary><p>Describir el problema como necesidad de trazabilidad y control de acceso; evitar atribuir capacidades de un SIEM que el prototipo no implementa.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">02 · Arquitectura</span>
+      <h2>Capas pequeñas y responsabilidades claras</h2>
+      <div class="flow"><span>Navegador<br><small>HTML · CSS · JS</small></span><b>→ HTTPS / JSON →</b><span>Express<br><small>REST · JWT · validación</small></span><b>→ TLS →</b><span>PostgreSQL<br><small>usuarios · incidentes</small></span></div>
+      <details><summary>Notas del presentador</summary><p>En Render, Express puede servir frontend y API en el mismo origen. Los controladores validan y los modelos ejecutan consultas parametrizadas.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">03 · Flujo demostrable</span>
+      <h2>De inicio de sesión a cambio persistido</h2>
+      <div class="grid">
+        <article class="card"><h3>1. Acceso</h3><p>Registro de analista o login de administrador.</p></article>
+        <article class="card"><h3>2. Operación</h3><p>Crear un incidente con título, severidad y descripción.</p></article>
+        <article class="card"><h3>3. Seguimiento</h3><p>Editar estado, consultar lista y eliminar el registro de prueba.</p></article>
+      </div>
+      <details><summary>Notas del presentador</summary><p>Demostrar con información ficticia. Abrir /salud primero. Mostrar edición y cierre de sesión. Si no hay despliegue, hacer la demo local solo si la base local está preparada.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">04 · Seguridad</span>
+      <h2>Identidad, propiedad y transporte</h2>
+      <div class="grid">
+        <article class="card"><h3>Autenticación</h3><p>Contraseñas bcrypt; JWT Bearer con expiración de ocho horas.</p></article>
+        <article class="card"><h3>Autorización</h3><p>Analista consulta lo propio; administrador consulta todos. El propietario se aplica en SQL.</p></article>
+        <article class="card"><h3>Protecciones</h3><p>Validación, consultas parametrizadas, CORS, Helmet, HTTPS/HSTS y TLS para PostgreSQL en Render.</p></article>
+      </div>
+      <details><summary>Notas del presentador</summary><p>El registro público no asigna rol ADMIN. Los secretos viven en el entorno del servidor, nunca en el JavaScript público.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">05 · Persistencia</span>
+      <h2>CRUD autenticado sobre PostgreSQL</h2>
+      <ul>
+        <li><code>GET /api/incidentes</code> — listar según rol.</li>
+        <li><code>POST /api/incidentes</code> — crear para la cuenta autenticada.</li>
+        <li><code>PUT /api/incidentes/:id</code> — actualizar campos permitidos.</li>
+        <li><code>DELETE /api/incidentes/:id</code> — eliminar con autorización.</li>
+      </ul>
+      <details><summary>Notas del presentador</summary><p>El esquema se crea con CREATE TABLE IF NOT EXISTS. No existe todavía un sistema de migraciones versionadas.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">06 · Calidad</span>
+      <h2>Pruebas y señales operativas</h2>
+      <ul>
+        <li><strong>15 pruebas automatizadas</strong> con Node.js Test Runner y Supertest.</li>
+        <li>Cubren salud, CORS, autenticación, roles, validación y CRUD.</li>
+        <li><code>/salud</code> comprueba PostgreSQL y responde 200 o 503.</li>
+        <li>Morgan genera logs de solicitudes en entornos distintos de test.</li>
+      </ul>
+      <details><summary>Notas del presentador</summary><p>Las consultas se sustituyen en pruebas: no es una integración real con PostgreSQL ni una prueba E2E del navegador.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">07 · Despliegue y límites</span>
+      <h2>Estado transparente del proyecto</h2>
+      <ul>
+        <li>Repositorio versionado en GitHub; Blueprint de Render define servicio y base.</li>
+        <li>Render necesita <code>JWT_SECRET</code>, <code>ADMIN_EMAIL</code> y <code>ADMIN_PASSWORD</code> configurados.</li>
+        <li>URL pública: pendiente de despliegue exitoso y verificación de <code>/salud</code>.</li>
+        <li>Mejoras: rate limiting, recuperación de cuenta, auditoría, migraciones y pruebas E2E.</li>
+      </ul>
+      <details><summary>Notas del presentador</summary><p>No afirmar que la app está online si Render no muestra el Web Service como Live. La base de datos sola no constituye una URL de aplicación.</p></details>
+    </section>
+
+    <section class="slide">
+      <span class="eyebrow">Cierre</span>
+      <h2>Preguntas</h2>
+      <p>¿Cómo se valida cada operación? ¿Cómo se evita que un analista lea los registros de otro? ¿Qué falta para producción?</p>
+      <p>Repositorio: <strong>github.com/alexisclemache-glitch/sistema-incidentes-soc</strong></p>
+      <details><summary>Notas del presentador</summary><p>Responder con la validación en controladores, el filtro por usuario_id en consultas y las limitaciones listadas. No mostrar credenciales.</p></details>
+    </section>
+  </main>
+  <footer>
+    <span>Presentación · Sistema SOC</span>
+    <div class="controls">
+      <button id="prev" type="button" aria-label="Diapositiva anterior">← Anterior</button>
+      <span id="counter" aria-live="polite">1 / 9</span>
+      <button id="next" type="button" aria-label="Diapositiva siguiente">Siguiente →</button>
+    </div>
+    <span>← → para navegar · P para imprimir</span>
+  </footer>
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const counter = document.getElementById('counter');
+    let current = 0;
+    function show(index) {
+      current = Math.max(0, Math.min(index, slides.length - 1));
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === current);
+        slide.setAttribute('aria-hidden', String(i !== current));
+      });
+      counter.textContent = `${current + 1} / ${slides.length}`;
+      document.getElementById('prev').disabled = current === 0;
+      document.getElementById('next').disabled = current === slides.length - 1;
+    }
+    document.getElementById('prev').addEventListener('click', () => show(current - 1));
+    document.getElementById('next').addEventListener('click', () => show(current + 1));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowRight' || event.key === 'PageDown') show(current + 1);
+      if (event.key === 'ArrowLeft' || event.key === 'PageUp') show(current - 1);
+      if (event.key.toLowerCase() === 'p' && !event.ctrlKey && !event.metaKey) window.print();
+    });
+    show(0);
+  </script>
+</body>
+</html>
