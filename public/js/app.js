@@ -1,8 +1,11 @@
 const esServidorLocalEstatico = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   && window.location.port !== '3000';
-const API_URL = esServidorLocalEstatico
-  ? 'http://localhost:3000/api/incidentes'
-  : '/api/incidentes';
+const apiBaseUrl = window.SOC_API_BASE_URL
+  ? window.SOC_API_BASE_URL.replace(/\/+$/, '')
+  : esServidorLocalEstatico
+    ? 'http://localhost:3000'
+    : '';
+const API_URL = `${apiBaseUrl}/api/incidentes`;
 const tablaBody = document.getElementById('tabla-body');
 const formIncidente = document.getElementById('form-incidente');
 const formMessage = document.getElementById('form-message');
