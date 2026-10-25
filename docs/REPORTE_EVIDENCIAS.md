@@ -1,8 +1,11 @@
 # Reporte de configuración, pruebas y evidencias
 
-**Proyecto:** Sistema de gestión de incidentes SOC/CSIRT  
-**Fecha de verificación local:** 24 de octubre de 2026  
-**Repositorio:** <https://github.com/alexisclemache-glitch/sistema-incidentes-soc>  
+**Proyecto:** Sistema de gestión de incidentes SOC/CSIRT
+
+**Fecha de verificación local:** 24 de octubre de 2026
+
+**Repositorio:** <https://github.com/alexisclemache-glitch/sistema-incidentes-soc>
+
 **Rama verificada:** `main`
 
 ## 1. Resumen ejecutivo
@@ -99,7 +102,8 @@ demuestra que esa ejecución de la aplicación no quedó activa. Aunque el `.env
 local se verificó después, las variables del entorno local son independientes
 de las variables configuradas en Render.
 
-**URL pública verificada:** ninguna disponible en las evidencias recibidas.  
+**URL pública verificada:** ninguna disponible en las evidencias recibidas.
+
 **Estado de `/salud` en producción:** no verificado.
 
 No presentar una dirección de Render como funcional hasta completar la
